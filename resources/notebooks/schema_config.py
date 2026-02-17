@@ -1,0 +1,240 @@
+# Databricks notebook source
+# schema_config.py
+# --- NAMESPACE CONFIGURATION ---
+BRONZE_CATALOG = "data_bronze"
+BRONZE_SCHEMA  = "bronze"
+SILVER_CATALOG = "data_silver"
+SILVER_SCHEMA  = "silver"
+QUARANTINE_SCHEMA = "quarantine"
+BRONZE_PREFIX = "data_bronze.bronze"
+SILVER_PREFIX = "data_silver.silver"
+AUDIT_SCHEMA = "audit"
+
+tables = ["city_time_series", "zip_time_series"]
+source_schema = "workspace.default"
+target_schema = "data_bronze.bronze"
+
+# Tables to process
+SILVER_TABLES = [
+    "cities_crosswalk", "city_time_series", "county_time_series",
+    "countycrosswalk_zillow", "datadictionary", "metro_time_series",
+    "neighborhood_time_series", "state_time_series", "zip_time_series"
+]
+
+# Columns to EXCLUDE from any updates (Metadata and Identifiers)
+EXCLUSION_LIST = [
+    "date", "regionname", "load_dt", "source", "rescued_data", 
+    "countyname", "statename", "statefips", "countyfips", 
+    "metroname_zillow", "cbsaname", "countryregionid_zillow", 
+    "metroregionid_zillow", "fips", "cbsacode", "unique_city_id", 
+    "county", "state"
+]
+
+SCHEMA_MAPPINGS = {
+    "cities_crosswalk": {
+        "unique_city_id": "STRING",
+        "city": "STRING",
+        "county": "STRING",
+        "state": "STRING",
+        "load_dt": "TIMESTAMP",
+        "source": "STRING"
+    },
+    "city_time_series": {
+        "date": "DATE",
+        "inventoryseasonallyadjusted_allhomes": "DOUBLE",
+        "inventoryraw_allhomes": "DOUBLE",
+        "medianlistingpricepersqft_1bedroom": "DOUBLE",
+        "medianlistingpricepersqft_2bedroom": "DOUBLE",
+        "medianlistingpricepersqft_3bedroom": "DOUBLE",
+        "medianlistingpricepersqft_4bedroom": "DOUBLE",
+        "medianlistingpricepersqft_5bedroomormore": "DOUBLE",
+        "medianlistingpricepersqft_allhomes": "DOUBLE",
+        "medianlistingpricepersqft_condocoop": "DOUBLE",
+        "medianlistingpricepersqft_duplextriplex": "DOUBLE",
+        "medianlistingpricepersqft_singlefamilyresidence": "DOUBLE",
+        "medianlistingprice_1bedroom": "DOUBLE",
+        "medianlistingprice_2bedroom": "DOUBLE",
+        "medianlistingprice_3bedroom": "DOUBLE",
+        "medianlistingprice_4bedroom": "DOUBLE",
+        "medianlistingprice_5bedroomormore": "DOUBLE",
+        "medianlistingprice_allhomes": "DOUBLE",
+        "medianlistingprice_condocoop": "DOUBLE",
+        "medianlistingprice_duplextriplex": "DOUBLE",
+        "medianlistingprice_singlefamilyresidence": "DOUBLE",
+        "medianpctofpricereduction_allhomes": "DOUBLE",
+        "medianpctofpricereduction_condocoop": "DOUBLE",
+        "medianpctofpricereduction_singlefamilyresidence": "DOUBLE",
+        "medianpricecutdollar_allhomes": "DOUBLE",
+        "medianpricecutdollar_condocoop": "DOUBLE",
+        "medianpricecutdollar_singlefamilyresidence": "DOUBLE",
+        "medianrentalpricepersqft_1bedroom": "DOUBLE",
+        "medianrentalpricepersqft_2bedroom": "DOUBLE",
+        "medianrentalpricepersqft_3bedroom": "DOUBLE",
+        "medianrentalpricepersqft_4bedroom": "DOUBLE",
+        "medianrentalpricepersqft_5bedroomormore": "DOUBLE",
+        "medianrentalpricepersqft_allhomes": "DOUBLE",
+        "medianrentalpricepersqft_condocoop": "DOUBLE",
+        "medianrentalpricepersqft_duplextriplex": "DOUBLE",
+        "medianrentalpricepersqft_multifamilyresidence5plusunits": "DOUBLE",
+        "medianrentalpricepersqft_singlefamilyresidence": "DOUBLE",
+        "medianrentalpricepersqft_studio": "DOUBLE",
+        "medianrentalprice_1bedroom": "DOUBLE",
+        "medianrentalprice_2bedroom": "DOUBLE",
+        "medianrentalprice_3bedroom": "DOUBLE",
+        "medianrentalprice_4bedroom": "DOUBLE",
+        "medianrentalprice_5bedroomormore": "DOUBLE",
+        "medianrentalprice_allhomes": "DOUBLE",
+        "medianrentalprice_condocoop": "DOUBLE",
+        "medianrentalprice_duplextriplex": "DOUBLE",
+        "medianrentalprice_multifamilyresidence5plusunits": "DOUBLE",
+        "medianrentalprice_singlefamilyresidence": "DOUBLE",
+        "medianrentalprice_studio": "DOUBLE",
+        "zhvipersqft_allhomes": "DOUBLE",
+        "pctofhomesdecreasinginvalues_allhomes": "DOUBLE",
+        "pctofhomesincreasinginvalues_allhomes": "DOUBLE",
+        "pctoflistingswithpricereductionsseasadj_allhomes": "DOUBLE",
+        "pctoflistingswithpricereductionsseasadj_condocoop": "DOUBLE",
+        "pctoflistingswithpricereductionsseasadj_singlefamilyresidence": "DOUBLE",
+        "pctoflistingswithpricereductions_allhomes": "DOUBLE",
+        "pctoflistingswithpricereductions_condocoop": "DOUBLE",
+        "pctoflistingswithpricereductions_singlefamilyresidence": "DOUBLE",
+        "pricetorentratio_allhomes": "DOUBLE",
+        "sale_counts": "DOUBLE",
+        "sale_counts_seas_adj": "DOUBLE",
+        "sale_prices": "DOUBLE",
+        "zhvi_1bedroom": "DOUBLE", "zhvi_2bedroom": "DOUBLE", "zhvi_3bedroom": "DOUBLE",
+        "zhvi_4bedroom": "DOUBLE", "zhvi_5bedroomormore": "DOUBLE", "zhvi_allhomes": "DOUBLE",
+        "zhvi_bottomtier": "DOUBLE", "zhvi_condocoop": "DOUBLE", "zhvi_middletier": "DOUBLE",
+        "zhvi_singlefamilyresidence": "DOUBLE", "zhvi_toptier": "DOUBLE", "zri_allhomes": "DOUBLE",
+        "zri_allhomesplusmultifamily": "DOUBLE", "zripersqft_allhomes": "DOUBLE",
+        "zri_multifamilyresidencerental": "DOUBLE", "zri_singlefamilyresidencerental": "DOUBLE",
+        "load_dt": "TIMESTAMP"
+    },
+    "county_time_series": {
+        "date": "DATE",
+        "regionname": "DOUBLE",
+        "zhvipersqft_allhomes": "DOUBLE",
+        "pctofhomesdecreasinginvalues_allhomes": "DOUBLE",
+        "pctofhomesincreasinginvalues_allhomes": "DOUBLE",
+        "zhvi_1bedroom": "DOUBLE", "zhvi_2bedroom": "DOUBLE", "zhvi_3bedroom": "DOUBLE",
+        "zhvi_4bedroom": "DOUBLE", "zhvi_5bedroomormore": "DOUBLE", "zhvi_allhomes": "DOUBLE",
+        "zhvi_bottomtier": "DOUBLE", "zhvi_condocoop": "DOUBLE", "zhvi_middletier": "DOUBLE",
+        "zhvi_singlefamilyresidence": "DOUBLE", "zhvi_toptier": "DOUBLE",
+        "load_dt": "TIMESTAMP"
+    },
+    "countycrosswalk_zillow": {
+        "statefips": "DOUBLE",
+        "countyfips": "DOUBLE",
+        "countyregionid_zillow": "DOUBLE",
+        "metroregionid_zillow": "DOUBLE",
+        "fips": "DOUBLE",
+        "cbsacode": "DOUBLE",
+        "load_dt": "TIMESTAMP"
+    },
+    "datadictionary": {
+        "load_dt": "TIMESTAMP"
+    },
+    "metro_time_series": {
+        "date": "DATE",
+        "regionname": "STRING",
+        "zhvipersqft_allhomes": "DOUBLE",
+        "pctofhomesdecreasinginvalues_allhomes": "DOUBLE",
+        "pctofhomesincreasinginvalues_allhomes": "DOUBLE",
+        "zhvi_1bedroom": "DOUBLE", "zhvi_2bedroom": "DOUBLE", "zhvi_3bedroom": "DOUBLE",
+        "zhvi_4bedroom": "DOUBLE", "zhvi_5bedroomormore": "DOUBLE", "zhvi_allhomes": "DOUBLE",
+        "zhvi_bottomtier": "DOUBLE", "zhvi_condocoop": "DOUBLE", "zhvi_middletier": "DOUBLE",
+        "zhvi_singlefamilyresidence": "DOUBLE", "zhvi_toptier": "DOUBLE",
+        "load_dt": "TIMESTAMP"
+    },
+    "neighborhood_time_series": {
+        "date": "DATE",
+        "regionname": "DOUBLE",
+        "zhvipersqft_allhomes": "DOUBLE",
+        "zhvi_1bedroom": "DOUBLE", "zhvi_2bedroom": "DOUBLE", "zhvi_3bedroom": "DOUBLE",
+        "zhvi_4bedroom": "DOUBLE", "zhvi_5bedroomormore": "DOUBLE", "zhvi_allhomes": "DOUBLE",
+        "zhvi_bottomtier": "DOUBLE", "zhvi_condocoop": "DOUBLE", "zhvi_middletier": "DOUBLE",
+        "zhvi_singlefamilyresidence": "DOUBLE", "zhvi_toptier": "DOUBLE",
+        "load_dt": "TIMESTAMP"
+    },
+    "state_time_series": {
+        "date": "DATE",
+        "zhvipersqft_allhomes": "DOUBLE",
+        "pctofhomesdecreasinginvalues_allhomes": "DOUBLE",
+        "pctofhomesincreasinginvalues_allhomes": "DOUBLE",
+        "pctofhomessellingforgain_allhomes": "DOUBLE",
+        "pctofhomessellingforloss_allhomes": "DOUBLE",
+        "sale_counts": "DOUBLE",
+        "sale_counts_seas_adj": "DOUBLE",
+        "sale_prices": "DOUBLE",
+        "zhvi_1bedroom": "DOUBLE", "zhvi_2bedroom": "DOUBLE", "zhvi_3bedroom": "DOUBLE",
+        "zhvi_4bedroom": "DOUBLE", "zhvi_5bedroomormore": "DOUBLE", "zhvi_allhomes": "DOUBLE",
+        "zhvi_bottomtier": "DOUBLE", "zhvi_condocoop": "DOUBLE", "zhvi_middletier": "DOUBLE",
+        "zhvi_singlefamilyresidence": "DOUBLE", "zhvi_toptier": "DOUBLE",
+        "load_dt": "TIMESTAMP"
+    },
+    "zip_time_series": {
+        "date": "DATE",
+        "regionname": "DOUBLE",
+        "inventoryseasonallyadjusted_allhomes": "DOUBLE",
+        "inventoryraw_allhomes": "DOUBLE",
+        "medianlistingpricepersqft_1bedroom": "DOUBLE",
+        "medianlistingpricepersqft_2bedroom": "DOUBLE",
+        "medianlistingpricepersqft_3bedroom": "DOUBLE",
+        "medianlistingpricepersqft_4bedroom": "DOUBLE",
+        "medianlistingpricepersqft_5bedroomormore": "DOUBLE",
+        "medianlistingpricepersqft_allhomes": "DOUBLE",
+        "medianlistingpricepersqft_condocoop": "DOUBLE",
+        "medianlistingpricepersqft_singlefamilyresidence": "DOUBLE",
+        "medianlistingprice_2bedroom": "DOUBLE",
+        "medianlistingprice_3bedroom": "DOUBLE",
+        "medianlistingprice_4bedroom": "DOUBLE",
+        "medianlistingprice_5bedroomormore": "DOUBLE",
+        "medianlistingprice_allhomes": "DOUBLE",
+        "medianlistingprice_condocoop": "DOUBLE",
+        "medianlistingprice_duplextriplex": "DOUBLE",
+        "medianlistingprice_singlefamilyresidence": "DOUBLE",
+        "medianpctofpricereduction_allhomes": "DOUBLE",
+        "medianpctofpricereduction_condocoop": "DOUBLE",
+        "medianpctofpricereduction_singlefamilyresidence": "DOUBLE",
+        "medianpricecutdollar_allhomes": "DOUBLE",
+        "medianpricecutdollar_condocoop": "DOUBLE",
+        "medianpricecutdollar_singlefamilyresidence": "DOUBLE",
+        "medianrentalpricepersqft_1bedroom": "DOUBLE",
+        "medianrentalpricepersqft_2bedroom": "DOUBLE",
+        "medianrentalpricepersqft_3bedroom": "DOUBLE",
+        "medianrentalpricepersqft_allhomes": "DOUBLE",
+        "medianrentalpricepersqft_condocoop": "DOUBLE",
+        "medianrentalpricepersqft_duplextriplex": "DOUBLE",
+        "medianrentalpricepersqft_multifamilyresidence5plusunits": "DOUBLE",
+        "medianrentalpricepersqft_singlefamilyresidence": "DOUBLE",
+        "medianrentalpricepersqft_studio": "DOUBLE",
+        "medianrentalprice_1bedroom": "DOUBLE",
+        "medianrentalprice_2bedroom": "DOUBLE",
+        "medianrentalprice_3bedroom": "DOUBLE",
+        "medianrentalprice_4bedroom": "DOUBLE",
+        "medianrentalprice_allhomes": "DOUBLE",
+        "medianrentalprice_condocoop": "DOUBLE",
+        "medianrentalprice_duplextriplex": "DOUBLE",
+        "medianrentalprice_multifamilyresidence5plusunits": "DOUBLE",
+        "medianrentalprice_singlefamilyresidence": "DOUBLE",
+        "medianrentalprice_studio": "DOUBLE",
+        "zhvipersqft_allhomes": "DOUBLE",
+        "pctofhomesdecreasinginvalues_allhomes": "DOUBLE",
+        "pctofhomesincreasinginvalues_allhomes": "DOUBLE",
+        "pctoflistingswithpricereductionsseasadj_allhomes": "DOUBLE",
+        "pctoflistingswithpricereductionsseasadj_condocoop": "DOUBLE",
+        "pctoflistingswithpricereductionsseasadj_singlefamilyresidence": "DOUBLE",
+        "pctoflistingswithpricereductions_allhomes": "DOUBLE",
+        "pctoflistingswithpricereductions_condocoop": "DOUBLE",
+        "pctoflistingswithpricereductions_singlefamilyresidence": "DOUBLE",
+        "pricetorentratio_allhomes": "DOUBLE",
+        "zhvi_1bedroom": "DOUBLE", "zhvi_2bedroom": "DOUBLE", "zhvi_3bedroom": "DOUBLE",
+        "zhvi_4bedroom": "DOUBLE", "zhvi_5bedroomormore": "DOUBLE", "zhvi_allhomes": "DOUBLE",
+        "zhvi_bottomtier": "DOUBLE", "zhvi_condocoop": "DOUBLE", "zhvi_middletier": "DOUBLE",
+        "zhvi_singlefamilyresidence": "DOUBLE", "zhvi_toptier": "DOUBLE",
+        "zri_allhomes": "DOUBLE", "zri_allhomesplusmultifamily": "DOUBLE",
+        "zripersqft_allhomes": "DOUBLE", "zri_multifamilyresidencerental": "DOUBLE",
+        "zri_singlefamilyresidencerental": "DOUBLE",
+        "load_dt": "TIMESTAMP"
+    }
+}

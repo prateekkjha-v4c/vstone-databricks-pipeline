@@ -1,0 +1,22 @@
+bundle:
+  name: VStoneProject
+
+include:
+  - src/*yml
+  - src/env/*.yml
+  - resource/*.yml # Added explicitly from my end
+  - resources/jobs/*.yml
+  - resources/pipelines/*.yml
+# Notebooks will be called by the jobs and pipelines and notebooks can be moved to src/ as well
+
+#permissions:
+#  - group_name: admins
+#    level: CAN_MANAGE
+
+
+targets:
+  dev:
+    mode: development
+    default: true # by default environment, changes will be deployed here
+    workspace:
+      host: https://dbc-d779de7b-49c0.cloud.databricks.com/
