@@ -24,17 +24,18 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      #- name: Merge Feature into Dev
-      #  run: |
+      - name: Merge Feature into Dev
+        run: |
           # Fetch all branches
-      #    git fetch origin dev
+          git fetch origin dev
           
           # Switch to dev branch
-      #    git checkout dev
+          git checkout dev
           
           # Merge the specific feature branch that triggered this run
           # github.ref_name contains the branch name (e.g., feature/login)
-          ##git merge origin/${{ github.ref_name }} --no-ff -m "Auto-merge ${{ github.ref_name }} into dev" ##
+          git merge origin/${{ github.ref_name }} --no-ff -m "Auto-merge ${{ github.ref_name }} into dev" 
           
           # Push the changes back to dev
-      #    git push origin dev
+          git push origin dev
+          ##
