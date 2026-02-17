@@ -1,0 +1,40 @@
+name: Continuous Integration - Auto Merge to Dev
+
+on:
+  push:
+    branches:
+      - 'feature/*'
+
+jobs:
+  merge-to-dev:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required for pushing changes
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Use a PAT if you want this push to trigger cd.yml
+          token: ${{ secrets.MY_PAT_TOKEN }} 
+          fetch-depth: 0 # Fetches all history for all branches
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge Feature into Dev
+        run: |
+          # Fetch all branches
+          git fetch origin dev
+          
+          # Switch to dev branch
+          git checkout dev
+          
+          # Merge the specific feature branch that triggered this run
+          # github.ref_name contains the branch name (e.g., feature/login)
+          git merge origin/${{ github.ref_name }} --no-ff -m "Auto-merge ${{ github.ref_name }} into dev"
+          
+          # Push the changes back to dev
+          git push origin dev

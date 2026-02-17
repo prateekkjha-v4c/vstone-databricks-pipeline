@@ -1,0 +1,40 @@
+resources:
+  jobs:
+    Data_Chunking:
+      name: Data Chunking
+      email_notifications:
+        on_start:
+          - prateek.k.jha@v4c.ai
+        on_success:
+          - prateek.k.jha@v4c.ai
+        on_failure:
+          - prateek.k.jha@v4c.ai
+      tasks:
+        - task_key: Data_Chunking
+          notebook_task:
+            notebook_path: ../notebooks/Data_Chunking.ipynb
+            source: WORKSPACE
+        - task_key: Data_Profiling_Landing
+          depends_on:
+            - task_key: Data_Chunking
+          notebook_task:
+            notebook_path: ../notebooks/Data_Profiling_Landing_Layer.ipynb
+            base_parameters:
+              datasets_json: "{{job.parameters.dataset_array}}"
+            source: WORKSPACE
+      tags:
+        RawData: KaggleAPI
+      queue:
+        enabled: true
+      parameters:
+        - name: dataset_array
+          default: '["cities_crosswalk","city_time_series","county_time_series","countycrosswalk_zillow","datadictionary","metro_time_series","neighborhood_time_series","state_time_series"
+            ,"zip_time_series"]'
+      environments:
+        - environment_key: Raw_data_fetchf_from_Kaggle_environment
+          spec:
+            dependencies:
+              - kagglehub
+              - lxml
+            environment_version: "4"
+      performance_target: PERFORMANCE_OPTIMIZED
