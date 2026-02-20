@@ -1,0 +1,39 @@
+resources:
+  jobs:
+    Silver_Layer_Ingestion:
+      name: Silver Layer Ingestion
+      email_notifications:
+        on_start:
+          - prateek.k.jha@v4c.ai
+        on_success:
+          - prateek.k.jha@v4c.ai
+        on_failure:
+          - prateek.k.jha@v4c.ai
+      tasks:
+        - task_key: Silver_Data_Ingestion_From_Bronze
+          pipeline_task:
+            pipeline_id: ed470936-af5c-470a-8bc2-8eac22c48c29
+            full_refresh: true
+        - task_key: ACID_Time_Travel_Demo
+          depends_on:
+            - task_key: Silver_Data_Ingestion_From_Bronze
+          notebook_task:
+            notebook_path: ../notebooks/Silver_Layer_Data_Cleaning.ipynb
+            source: WORKSPACE
+        - task_key: Data_Profiling_Silver_Layer
+          depends_on:
+            - task_key: ACID_Time_Travel_Demo
+          notebook_task:
+            notebook_path: ../notebooks/Data_Profiling_Silver_Layer.ipynb
+            base_parameters:
+              datasets_json: '["dim_cities_crosswalk","dim_countycrosswalk_zillow","dim_datadictionary","fact_city_time_series","fact_county_time_series","fact_metro_time_series","fact_neighborhood_time_series","fact_state_time_series","fact_zip_time_series"]'
+            source: WORKSPACE
+      tags:
+        DataIngestion: SilverLayerIngestion
+      queue:
+        enabled: true
+      parameters:
+        - name: datasets_array
+          default: '["cities_crosswalk","city_time_series","county_time_series","countycrosswalk_zillow","datadictionary","metro_time_series","neighborhood_time_series","state_time_series"
+            ,"zip_time_series"]'
+      performance_target: PERFORMANCE_OPTIMIZED
