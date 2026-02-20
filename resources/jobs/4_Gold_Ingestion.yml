@@ -1,0 +1,51 @@
+resources:
+  jobs:
+    Gold_Layer_Ingestion:
+      name: Gold Layer Ingestion
+      email_notifications:
+        on_start:
+          - prateek.k.jh@v4c.ai
+        on_success:
+          - prateek.k.jh@v4c.ai
+        on_failure:
+          - prateek.k.jh@v4c.ai
+      tasks:
+        - task_key: Gold_Layer_Ingestion_Step_1
+          notebook_task:
+            notebook_path: ../notebooks/Gold_Layer_STG_Ingestion_Step_1.ipynb
+            source: WORKSPACE
+        - task_key: Gold_Layer_Ingestion_Step_2_DLT
+          depends_on:
+            - task_key: Gold_Layer_Ingestion_Step_1
+          pipeline_task:
+            pipeline_id: 6521d1ba-c856-413d-9991-995fff84d321
+            full_refresh: true
+        - task_key: Gold_Layer_Testing_Step3
+          depends_on:
+            - task_key: Gold_Layer_Ingestion_Step_2_DLT
+          notebook_task:
+            notebook_path: ../notebooks/Gold_Layer_Step_3_Testing.ipynb
+            source: WORKSPACE
+        - task_key: Gold_Layer_Data_Profining_Audit_Step4
+          depends_on:
+            - task_key: Gold_Layer_Testing_Step3
+          notebook_task:
+            notebook_path: ../notebooks/Gold_Layer_Step_4_Data_Profiling.ipynb
+            source: WORKSPACE
+        - task_key: Gold_Layer_Business_Views_RLS_CLS_DDM
+          depends_on:
+            - task_key: Gold_Layer_Data_Profining_Audit_Step4
+          spark_python_task:
+            python_file: ../notebooks/Gold_Layer_Step5_BI_Views.py
+          environment_key: Default
+      queue:
+        enabled: true
+      parameters:
+        - name: datasets_array
+          default: '["dim_county","dim_state",
+            "dim_metric_dictionary", "dim_region_type","dim_geography_gold","fact_market_metrics_gold"]'
+      environments:
+        - environment_key: Default
+          spec:
+            environment_version: "4"
+      performance_target: PERFORMANCE_OPTIMIZED
