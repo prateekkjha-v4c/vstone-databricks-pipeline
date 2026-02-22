@@ -44,13 +44,19 @@ resources:
           notebook_task:
             notebook_path: ../notebooks/Bronze_Ingestion_Facts_After_DLT.ipynb
             source: WORKSPACE
-        - task_key: Data_Profiling_And_Unit_Testing
+        - task_key: Data_Profiling
           depends_on:
             - task_key: Data_Append_MVs_To_Bronze_Delta_Tables
           notebook_task:
             notebook_path: ../notebooks/Data_Profiling_Bronze_Layer.ipynb
             base_parameters:
               datasets_json: "{{job.parameters.datasets_array}}"
+            source: WORKSPACE
+        - task_key: Unit_Testing
+          depends_on:
+            - task_key: Data_Profiling
+          notebook_task:
+            notebook_path: ../../tests/Bronze_QA_Gate.ipynb
             source: WORKSPACE
       tags:
         DataIngestion: BronzeIngestion
