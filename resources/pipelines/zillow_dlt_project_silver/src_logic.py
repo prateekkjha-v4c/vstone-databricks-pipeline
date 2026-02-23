@@ -6,51 +6,44 @@ from config.schema_config import SCHEMA_MAPPINGS, BRONZE_PREFIX
 
 @pandas_udf("double")
 def normalize_currency_udf(v: pd.Series) -> pd.Series:
-    """Standardize currency values to 2 decimal places."""
     return v.round(2)
 
 def standardize_header(name: str) -> str:
-    """lowercase and remove non-alphanumeric chars."""
     if not name: return name
     return re.sub(r'[^a-z0-9]', '', name.lower())
 
 def build_silver_schema(table_name):
-    """
-    Builds the DDL schema string. 
-    Defines row_id as a native Identity column to ensure sequential autoincrement.
-    """
     mapping = SCHEMA_MAPPINGS.get(table_name, {})
-    # IDENTITY (START WITH 1 INCREMENT BY 1) ensures the 1, 2, 3... pattern requested.
-    schema_parts = ["row_id BIGINT GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) COMMENT 'Surrogate primary key'"]
+    # row_id is defined with the IDENTITY property
+    schema_parts = ["row_id BIGINT GENERATED ALWAYS AS IDENTITY"]
     
     for col, dtype in mapping.items():
         if col.lower() not in ["row_id", "load_dt", "source"]:
-            schema_parts.append(f"{col} {dtype} COMMENT 'Enterprise standardized {col}'")
+            schema_parts.append(f"{col} {dtype}")
             
-    schema_parts.append("load_dt TIMESTAMP COMMENT 'Ingestion timestamp'")
-    schema_parts.append("source STRING COMMENT 'Source table path'")
+    schema_parts.append("load_dt TIMESTAMP")
+    schema_parts.append("source STRING")
     return ", ".join(schema_parts)
 
-def transform_logic(df, ds_name):
+def transform_logic(df, ds_name, is_streaming=False):
     """
-    Standardizes data. 
-    Crucially drops 'row_id' to allow Delta Identity to take over.
+    Standardizes data and prepares for the IDENTITY column.
     """
-    # 1. Clean existing headers from source
+    # 1. Header Standardization
     for col in df.columns:
         df = df.withColumnRenamed(col, standardize_header(col))
     
     mapping = SCHEMA_MAPPINGS.get(ds_name, {})
     select_expr = []
     
+    # 2. Map business columns
     for target_col, target_type in mapping.items():
-        # CRITICAL: Do NOT include row_id in the select statement.
-        # If the DLT table schema has row_id but the DF does not, Delta populates it.
+        # Do NOT include row_id in the select. 
+        # Writing to a table with an Identity column requires omitting that column.
         if target_col.lower() in ["row_id", "load_dt", "source"]:
             continue
         
         lookup_key = standardize_header(target_col)
-        
         if lookup_key in df.columns:
             if target_type.upper() == "DATE":
                 casted_col = F.to_date(F.col(lookup_key))
@@ -61,13 +54,11 @@ def transform_logic(df, ds_name):
                 casted_col = F.expr(f"try_cast({lookup_key} as {target_type})")
             select_expr.append(casted_col.alias(target_col))
         else:
-            # Handle missing columns from source
             default_val = F.lit(0.0) if target_type.upper() == "DOUBLE" else F.lit(None)
             select_expr.append(default_val.cast(target_type).alias(target_col))
     
-    # Return the DF without row_id
-    return (
-        df.select(select_expr)
-        .withColumn("load_dt", F.current_timestamp())
-        .withColumn("source", F.lit(f"{BRONZE_PREFIX}.{ds_name}"))
-    )
+    # 3. Intermediate DataFrame
+    # No row_id logic here; Spark is purely doing business transformations.
+    return df.select(select_expr) \
+             .withColumn("load_dt", F.current_timestamp()) \
+             .withColumn("source", F.lit(f"{BRONZE_PREFIX}.{ds_name}"))
