@@ -1,5 +1,17 @@
 # Databricks notebook source
 # schema_config.py
+KAGGLE_SCOPE = "KaggleCreds" 
+# The unique identifier for the Zillow dataset on Kaggle
+DATASET_HANDLE = "zillow/zecon"
+# Path to the Unity Catalog Volume for landing raw files
+VOLUME_BASE_PATH = "/Volumes/data_landing/data_raw"
+SIZE_LIMIT_BYTES = 500 * 1024 * 1024 
+
+SOURCE_BASE_PATH = "/Volumes/data_landing/data_raw"
+DEST_CATALOG     = "data_bronze"
+DEST_SCHEMA      = "bronze"
+
+
 # --- NAMESPACE CONFIGURATION ---
 BRONZE_CATALOG = "data_bronze"
 BRONZE_SCHEMA  = "bronze"
