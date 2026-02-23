@@ -1,0 +1,26 @@
+name: Continuous Deployment - Deploy Dev
+
+on:
+  push:
+    branches:
+      - dev
+  # Optional: Allow manual trigger or trigger after ci.yml completes
+  workflow_run:
+    workflows: ["Continuous Integration - Auto Merge to Dev"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    # Only run if the CI workflow was successful (if using workflow_run)
+    if: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Dev Branch
+        uses: actions/checkout@v4
+
+      - name: Deployment Logic
+        run: |
+          echo "Starting deployment to the development environment..."
+          # Insert your deployment scripts (Databricks CLI, AWS, Azure, etc.) here

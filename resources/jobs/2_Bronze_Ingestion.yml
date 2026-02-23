@@ -1,0 +1,69 @@
+resources:
+  jobs:
+    Bronze_Ingestion:
+      name: Bronze Ingestion
+      email_notifications:
+        on_start:
+          - prateek.k.jha@v4c.ai
+        on_success:
+          - prateek.k.jha@v4c.ai
+        on_failure:
+          - prateek.k.jha@v4c.ai
+      tasks:
+        - task_key: Bronze_Ingestion_COPY_INTO
+          notebook_task:
+            notebook_path: ../notebooks/Bronze_Layer_Ingestion_COPY_INTO.ipynb
+            base_parameters:
+              datasets_json: "{{job.parameters.datasets_array}}"
+            source: WORKSPACE
+        - task_key: Data_Ingestion_Bronze_XML
+          depends_on:
+            - task_key: Bronze_Ingestion_COPY_INTO
+          notebook_task:
+            notebook_path: ../notebooks/Data_Ingestion_Bronze_XML.ipynb
+            base_parameters:
+              datasets_json: "{{job.parameters.datasets_array}}"
+            source: WORKSPACE
+        - task_key: Data_Ingestion_Bronze_JSON_Autoloader
+          depends_on:
+            - task_key: Data_Ingestion_Bronze_XML
+          notebook_task:
+            notebook_path: ../notebooks/Data_Ingestion_Bronze_JSON_Autoloader.ipynb
+            base_parameters:
+              datasets_json: "{{job.parameters.datasets_array}}"
+            source: WORKSPACE
+        - task_key: DLT_Pipeline_CSV_MVs
+          depends_on:
+            - task_key: Data_Ingestion_Bronze_JSON_Autoloader
+          pipeline_task:
+            pipeline_id: 26c0f4a2-fd09-417a-b0fe-3fb7a361da04
+            full_refresh: true
+        - task_key: Data_Append_MVs_To_Bronze_Delta_Tables
+          depends_on:
+            - task_key: DLT_Pipeline_CSV_MVs
+          notebook_task:
+            notebook_path: ../notebooks/Bronze_Ingestion_Facts_After_DLT.ipynb
+            source: WORKSPACE
+        - task_key: Data_Profiling
+          depends_on:
+            - task_key: Data_Append_MVs_To_Bronze_Delta_Tables
+          notebook_task:
+            notebook_path: ../notebooks/Data_Profiling_Bronze_Layer.ipynb
+            base_parameters:
+              datasets_json: "{{job.parameters.datasets_array}}"
+            source: WORKSPACE
+        - task_key: Unit_Testing
+          depends_on:
+            - task_key: Data_Profiling
+          notebook_task:
+            notebook_path: ../../tests/Bronze_QA_Gate.ipynb
+            source: WORKSPACE
+      tags:
+        DataIngestion: BronzeIngestion
+      queue:
+        enabled: true
+      parameters:
+        - name: datasets_array
+          default: '["cities_crosswalk","city_time_series","county_time_series","countycrosswalk_zillow","datadictionary","metro_time_series","neighborhood_time_series","state_time_series"
+            ,"zip_time_series"]'
+      performance_target: PERFORMANCE_OPTIMIZED
